@@ -1,69 +1,66 @@
-package webserver;
+package WebServer;
 
-import java.net.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.net.ServerSocket;
+import java.net.Socket;
 
-public class WebServer extends Thread {
-	protected Socket clientSocket;
+public class WebServer {
+    private int port;
+    private File root;
+    private File maintance;
+    private ServerStatus status;
 
-	public static void main(String[] args) throws IOException {
-		ServerSocket serverSocket = null;
 
-		try {
-			serverSocket = new ServerSocket(10008);
-			System.out.println("Connection Socket Created");
-			try {
-				while (true) {
-					System.out.println("Waiting for Connection");
-					new WebServer(serverSocket.accept());
-				}
-			} catch (IOException e) {
-				System.err.println("Accept failed.");
-				System.exit(1);
-			}
-		} catch (IOException e) {
-			System.err.println("Could not listen on port: 10008.");
-			System.exit(1);
-		} finally {
-			try {
-				serverSocket.close();
-			} catch (IOException e) {
-				System.err.println("Could not close port: 10008.");
-				System.exit(1);
-			}
-		}
-	}
 
-	private WebServer(Socket clientSoc) {
-		clientSocket = clientSoc;
-		start();
-	}
+    public WebServer (String root, int port) throws WebServerException {
+        try {
+            this.root = new File(root).getCanonicalFile();
+        } catch (IOException e) {
+            throw new WebServerException("Cannot get the file passed as root");
+        }
+        if (!this.root.isDirectory()) {
+            throw new WebServerException("The file passed as root is not a directory");
+        }
+        this.port = port;
+    }
 
-	public void run() {
-		System.out.println("New Communication Thread Started");
+    public void start() throws WebServerException {
+        ServerSocket serverSocket = null;
+        try {
+            serverSocket = new ServerSocket(port);
+            Logger.serverStarted(port, root.getAbsolutePath());
+        } catch (Exception e) {
+            throw new WebServerException("Cannot start the web server on port " + port + ".");
+        }
 
-		try {
-			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(),
-					true);
-			BufferedReader in = new BufferedReader(new InputStreamReader(
-					clientSocket.getInputStream()));
-
-			String inputLine;
-			
-			while ((inputLine = in.readLine()) != null) {
-				System.out.println("Server: " + inputLine);
-				out.println(inputLine);
-
-				if (inputLine.trim().equals(""))
-					break;
-			}
-
-			out.close();
-			in.close();
-			clientSocket.close();
-		} catch (IOException e) {
-			System.err.println("Problem with Communication Server");
-			System.exit(1);
-		}
-	}
+        ThreadGroup clients = new ThreadGroup("HTTP Clients");
+        while (status == ServerStatus.RUNNING || status == ServerStatus.MAINTENANCE) {
+            try {
+                Socket socket = serverSocket.accept();
+                ClientThread clientThread = new ClientThread (socket, root, this);
+                new Thread(clients, clientThread)
+                        .start();
+            }
+            catch (Exception ex) {
+                  new WebServerException("Cannot get new connection " + ex);
+            }
+        }
+    }
+    public ServerStatus getStatus() {return status;}
+    public File getMaintance () { return maintance;  }
+    public void setMaintance(File maintance) { this.maintance = maintance;  }
+    public void setServerStatus(ServerStatus stat) {
+        this.status = stat;
+    }
+    public void setRoot(String root) throws WebServerException {
+        try {
+            this.root = new File(root).getCanonicalFile();
+        } catch (IOException e) {
+            throw new WebServerException("Cannot get the file passed as root");
+        }
+        if (!this.root.isDirectory()) {
+            throw new WebServerException("The file passed as root is not a directory");
+        }
+    }
 }

@@ -40,22 +40,22 @@ public class ConfigTest {
 		assertTrue(f.isFile());
 	}
 	
-	@Test
-	public void testValidConfigPath3() throws IOException {
-		String configFileName = "C:/webserver/tests/config/webServerConfig1.ini";
-		File f = new File(configFileName);
-		f.createNewFile();
-		
-		FileOutputStream fos = new FileOutputStream(f);
-		
-		assertTrue(f.isFile());
-		
-		Config config = new Config(configFileName);
-
-		assertTrue(f.isFile());
-		
-		config.getSetting("");
-	}
+//	@Test
+//	public void testValidConfigPath3() throws IOException {
+//		String configFileName = "C:/webserver/tests/config/webServerConfig1.ini";
+//		File f = new File(configFileName);
+//		f.createNewFile();
+//		
+//		FileOutputStream fos = new FileOutputStream(f);
+//		
+//		assertTrue(f.isFile());
+//		
+//		Config config = new Config(configFileName);
+//
+//		assertTrue(f.isFile());
+//		
+//		config.getSetting("");
+//	}
 	
 	@Test(expected = ConfigInitException.class)
 	public void testInvalidConfigPath() {
