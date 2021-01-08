@@ -17,6 +17,11 @@ def test():    set_java_recorded_version("1.8.0_265")
         click('Start Server')
         assert_p('lbl:DESKTOP-UMVB6IM/192.168.100.8', 'Text', 'DESKTOP-UMVB6IM/192.168.100.8')
         assert_p('lbl:RUNNING', 'Text', 'RUNNING')
+	i = 1
+        while i < 100:
+		click('Start Server')
+		click('Stop Server')
+		i += 1
         click('Start Server')
         click('Maintenance')
         click('Stop Server')
