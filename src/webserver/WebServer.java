@@ -10,10 +10,10 @@ public class WebServer {
     private File root;
     private File maintance;
     private ServerStatus status;
+    private boolean running = false;
 
 
-
-    public WebServer (String root, int port) throws WebServerException {
+    public WebServer(String root, int port) throws WebServerException {
         try {
             this.root = new File(root).getCanonicalFile();
         } catch (IOException e) {
@@ -26,6 +26,7 @@ public class WebServer {
     }
 
     public void start() throws WebServerException {
+    	running = true;
         ServerSocket serverSocket = null;
         try {
             serverSocket = new ServerSocket(port);
@@ -35,7 +36,7 @@ public class WebServer {
         }
 
         ThreadGroup clients = new ThreadGroup("HTTP Clients");
-        while (status == ServerStatus.RUNNING || status == ServerStatus.MAINTENANCE) {
+        while ((status == ServerStatus.RUNNING || status == ServerStatus.MAINTENANCE) && running) {
             try {
                 Socket socket = serverSocket.accept();
                 ClientThread clientThread = new ClientThread (socket, root, this);
@@ -47,6 +48,11 @@ public class WebServer {
             }
         }
     }
+    
+    public void stop() {
+    	running = false;
+    }
+    
     public ServerStatus getStatus() {return status;}
     public File getMaintance () { return maintance;  }
     public void setMaintance(File maintance) { this.maintance = maintance;  }

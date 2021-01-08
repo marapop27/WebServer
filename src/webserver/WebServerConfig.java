@@ -38,11 +38,8 @@ public  class WebServerConfig {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    	
-    	
-    
-
     }
+    
     public static String getRootFolder () {
     	return prop.getProperty("root");
     }
@@ -55,6 +52,7 @@ public  class WebServerConfig {
     public static int getPort() {
     	return Integer.parseInt(prop.getProperty("port"));
     }
+    
     public static Properties loadConfigFile(String propertiesFilepath) {
 		InputStream is = null;
 	    try {
